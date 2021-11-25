@@ -272,8 +272,8 @@ mod tests {
         );
         assert_eq!(-355, to::int("negativ three hundre and fifty fiv"));
         assert_eq!(
-            -123456789098765432,
-            to::int(&to::string(-123456789098765432))
+            -123_456_789_098_765_432,
+            to::int(&to::string(-123_456_789_098_765_432))
         );
     }
 
