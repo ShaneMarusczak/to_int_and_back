@@ -12,7 +12,6 @@
 //!
 //! assert_eq!(42,to::int("fty twwoo")); panics!
 
-// pub mod to_int_and_back {
 pub mod to {
     use std::collections::HashMap;
 
@@ -252,7 +251,6 @@ pub mod to {
         dist[word2.len()] as i32
     }
 }
-// }
 
 #[cfg(test)]
 mod tests {
