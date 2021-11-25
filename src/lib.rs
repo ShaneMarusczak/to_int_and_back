@@ -1,18 +1,22 @@
 //!This library will convert English number names to their integer equivalent and vice versa.
+//!
 //! assert_eq!(42, to::int(&to::string(42)));
+//!
 //! assert_eq!("forty two",to::string(to::int("forty two")));
 //!
 //! Support includes negative numbers and typos in the English name input.
 //!
 //! Uses Levenshtein distance algorithm to accept words a distance of 1 from a valid spelling.
+//!
 //! assert_eq!(42,to::int("frty twoo"));
+//!
 //! //! assert_eq!(42,to::int("fty twwoo")); panics!
 
 // pub mod to_int_and_back {
 pub mod to {
     use std::collections::HashMap;
 
-    ///This function takes in an integer as an isize and converts its English name as a String.
+    ///This function takes in an integer as an isize and returns its English name as a String.
     pub fn string(num: isize) -> String {
         let mut num_internal = num;
         if num_internal == 0 {
@@ -83,7 +87,7 @@ pub mod to {
         }
     }
 
-    ///This function takes in an English name of a number as a &str and converts it to an isize.
+    ///This function takes in an English name of an integer as a &str and returns it as an isize.
     pub fn int(text_num: &str) -> isize {
         let text_num_inner = &text_num.to_lowercase()[..];
         let mut num_words: HashMap<&str, (isize, isize)> = HashMap::new();
