@@ -10,7 +10,7 @@
 //!
 //! assert_eq!(42,to::int("frty twoo"));
 //!
-//! //! assert_eq!(42,to::int("fty twwoo")); panics!
+//! assert_eq!(42,to::int("fty twwoo")); panics!
 
 // pub mod to_int_and_back {
 pub mod to {
