@@ -114,9 +114,9 @@ pub mod to {
     /// assert_eq!(to::int("frty twoo"), 42);
     ///```
     /// ```should_panic
-    /// use to_int_and_back::to;
+    /// # use to_int_and_back::to;
     ///
-    /// assert_eq!(to::int("fty twwoo"), 42);
+    /// assert_eq!(to::int("fty twwoo"), 42); //panics!
     ///```
     pub fn int(text_num: &str) -> isize {
         let text_num_inner = &text_num.to_lowercase()[..];
