@@ -250,47 +250,47 @@ mod tests {
     use super::to;
     #[test]
     fn tests_should_not_panic() {
-        assert_eq!(142, to::int("One Hundred And Forty Two"));
+        assert_eq!(to::int("One Hundred And Forty Two"), 142);
         assert_eq!(
-            1_427_473,
             to::int(
                 "one million four hundred twenty seven thousand four hundred and seventy three"
-            )
+            ),
+            1_427_473
         );
         assert_eq!(
-            -7396,
-            to::int("negative seven thousand three hundred and ninety six")
+            to::int("negative seven thousand three hundred and ninety six"),
+            -7396
         );
-        assert_eq!(-355, to::int("negativ three hundre and fifty fiv"));
+        assert_eq!(to::int("negativ three hundre and fifty fiv"), -355);
         assert_eq!(
-            -123_456_789_098_765_432,
-            to::int(&to::string(-123_456_789_098_765_432))
+            to::int(&to::string(-123_456_789_098_765_432)),
+            -123_456_789_098_765_432
         );
     }
 
     #[test]
     fn tests_should_not_panic_int() {
-        assert_eq!("one hundred forty two", to::string(142));
+        assert_eq!(to::string(142), "one hundred forty two");
         assert_eq!(
-            "one million four hundred twenty seven thousand four hundred seventy three",
-            to::string(1_427_473)
+            to::string(1_427_473),
+            "one million four hundred twenty seven thousand four hundred seventy three"
         );
         assert_eq!(
-            "negative seven thousand three hundred ninety six",
-            to::string(-7396)
+            to::string(-7396),
+            "negative seven thousand three hundred ninety six"
         );
-        assert_eq!("negative three hundred fifty five", to::string(-355));
+        assert_eq!(to::string(-355), "negative three hundred fifty five");
         assert_eq!(
-            "negative twenty seven thousand eight hundred sixty nine",
             to::string(to::int(
                 "negative twenty seven thousand eight hundred sixty nine"
-            ))
+            )),
+            "negative twenty seven thousand eight hundred sixty nine"
         );
     }
 
     #[test]
     #[should_panic(expected = "Invalid input")]
     fn tests_should_panic() {
-        assert_eq!(142, to::int("one hured and forty two"));
+        assert_eq!(to::int("one hured and forty two"), 142);
     }
 }
