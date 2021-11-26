@@ -1,7 +1,5 @@
 //!This library will convert English number names to their integer equivalent and vice versa.
 //!
-//! Support includes negative numbers and typos in the English name input.
-//!
 //! Uses Levenshtein distance algorithm to accept words a distance of 1 from a valid spelling.
 
 pub mod to {
@@ -9,16 +7,16 @@ pub mod to {
 
     ///This function takes an integer and returns its English name.
     ///
-    /// 42 -> "forty two"
-    ///
     /// ```
     /// # use to_int_and_back::to;
     ///
     /// assert_eq!(to::string(42), "forty two");
     ///
-    /// assert_eq!(to::int(&to::string(42)), 42);
+    /// assert_eq!(to::string(-42), "negative forty two");
     ///
-    /// assert_eq!(to::string(to::int("forty two")), "forty two");
+    /// assert_eq!(to::int(&to::string(42)).expect(""), 42);
+    ///
+    /// assert_eq!(to::string(to::int("forty two").expect("")), "forty two");
     /// ```
     pub fn string(num: isize) -> String {
         let mut num_internal = num;
@@ -100,26 +98,30 @@ pub mod to {
         }
     }
 
-    ///This function takes an English name of an integer and returns it as an isize.
+    ///This function takes an English name of an integer and returns its integer value as an isize.
     ///
     /// Will still convert for input errors a distance of 1 from the correct spelling of the English name.
     ///
-    /// "forty two" -> 42
+    /// Returns
+    /// Ok(isize),
+    /// Err(String)
     ///
     /// ```
     /// # use to_int_and_back::to;
     ///
-    /// assert_eq!(to::int("forty two"), 42);
+    /// assert_eq!(to::int("forty two").expect(""), 42);
     ///
-    /// assert_eq!(to::int("frty twoo"), 42);
+    /// assert_eq!(to::int("negative forty two").expect(""), -42);
+    ///
+    /// assert_eq!(to::int("frty twoo").expect(""), 42);
     ///
     ///```
     /// ```should_panic
     /// # use to_int_and_back::to;
     ///
-    /// assert_eq!(to::int("fty twwoo"), 42); //panics!
+    /// assert_eq!(to::int("fty twwoo").expect(""), 42); //panics!
     ///```
-    pub fn int(text_num: &str) -> isize {
+    pub fn int(text_num: &str) -> Result<isize, String> {
         let text_num_inner = &text_num.to_lowercase()[..];
         let mut num_words: HashMap<&str, (isize, isize)> = HashMap::new();
         let units = [
@@ -176,7 +178,7 @@ pub mod to {
                     multipler = -1;
                     continue;
                 } else {
-                    panic!("Invalid input");
+                    return Err(String::from("Invalid input"));
                 }
             }
             let word_next = if !num_words.contains_key(&word) {
@@ -185,6 +187,10 @@ pub mod to {
                 String::from(word)
             };
 
+            if word_next.contains("Did you mean") {
+                return Err(word_next);
+            }
+
             let (scale, increment) = num_words[word_next.as_str()];
             current = current * scale + increment;
             if scale > 100 {
@@ -192,7 +198,7 @@ pub mod to {
                 current = 0;
             }
         }
-        (result + current) * multipler
+        Ok((result + current) * multipler)
     }
     fn get_power(num: usize) -> u32 {
         if num == 0 {
@@ -214,11 +220,10 @@ pub mod to {
         }
         if min_dist > 1 {
             if min_distance(word, "negative") < 5 {
-                println!("Did you mean negative?");
+                return String::from("Did you mean negative?");
             } else {
-                println!("Did you mean {}?", final_string);
+                return String::from(format!("Did you mean {}?", final_string));
             }
-            panic!("Invalid input")
         }
         final_string
     }
@@ -250,27 +255,31 @@ pub mod to {
 mod tests {
     use super::to;
     #[test]
-    fn tests_should_not_panic() {
-        assert_eq!(to::int("One Hundred And Forty Two"), 142);
+    fn tests_should_not_panic_to_int() {
+        assert_eq!(to::int("One Hundred And Forty Two").expect(""), 142);
         assert_eq!(
             to::int(
                 "one million four hundred twenty seven thousand four hundred and seventy three"
-            ),
+            )
+            .expect(""),
             1_427_473
         );
         assert_eq!(
-            to::int("negative seven thousand three hundred and ninety six"),
+            to::int("negative seven thousand three hundred and ninety six").expect(""),
             -7396
         );
-        assert_eq!(to::int("negativ three hundre and fifty fiv"), -355);
         assert_eq!(
-            to::int(&to::string(-123_456_789_098_765_432)),
+            to::int("negativ three hundre and fifty fiv").expect(""),
+            -355
+        );
+        assert_eq!(
+            to::int(&to::string(-123_456_789_098_765_432)).expect(""),
             -123_456_789_098_765_432
         );
     }
 
     #[test]
-    fn tests_should_not_panic_int() {
+    fn tests_should_not_panic_to_string() {
         assert_eq!(to::string(142), "one hundred forty two");
         assert_eq!(
             to::string(1_427_473),
@@ -282,16 +291,31 @@ mod tests {
         );
         assert_eq!(to::string(-355), "negative three hundred fifty five");
         assert_eq!(
-            to::string(to::int(
-                "negative twenty seven thousand eight hundred sixty nine"
-            )),
+            to::string(
+                to::int("negative twenty seven thousand eight hundred sixty nine").expect("")
+            ),
             "negative twenty seven thousand eight hundred sixty nine"
         );
     }
 
     #[test]
+    #[should_panic(expected = "Did you mean hundred?")]
+    fn tests_should_panic_message_1() {
+        assert_eq!(to::int("one hured and forty two").expect(""), 142);
+    }
+
+    #[test]
+    #[should_panic(expected = "Did you mean negative?")]
+    fn tests_should_panic_message_2() {
+        assert_eq!(to::int("ngtiv one hundred forty two").expect(""), 142);
+    }
+
+    #[test]
     #[should_panic(expected = "Invalid input")]
-    fn tests_should_panic() {
-        assert_eq!(to::int("one hured and forty two"), 142);
+    fn tests_should_panic_message_3() {
+        assert_eq!(
+            to::int("negative negative one hundred forty two").expect(""),
+            142
+        );
     }
 }
