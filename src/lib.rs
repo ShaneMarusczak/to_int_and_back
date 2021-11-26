@@ -112,6 +112,7 @@ pub mod to {
     /// assert_eq!(to::int("forty two"), 42);
     ///
     /// assert_eq!(to::int("frty twoo"), 42);
+    ///
     ///```
     /// ```should_panic
     /// # use to_int_and_back::to;
