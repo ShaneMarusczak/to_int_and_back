@@ -12,7 +12,7 @@ pub mod to {
     /// 42 -> "forty two"
     ///
     /// ```
-    /// use to_int_and_back::to;
+    /// # use to_int_and_back::to;
     ///
     /// assert_eq!(to::string(42), "forty two");
     ///
@@ -107,7 +107,7 @@ pub mod to {
     /// "forty two" -> 42
     ///
     /// ```
-    /// use to_int_and_back::to;
+    /// # use to_int_and_back::to;
     ///
     /// assert_eq!(to::int("forty two"), 42);
     ///
