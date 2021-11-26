@@ -14,11 +14,11 @@ pub mod to {
     /// ```
     /// use to_int_and_back::to;
     ///
-    /// assert_eq!("forty two", to::string(42));
+    /// assert_eq!(to::string(42), "forty two");
     ///
-    /// assert_eq!(42, to::int(&to::string(42)));
+    /// assert_eq!(to::int(&to::string(42)), 42);
     ///
-    /// assert_eq!("forty two",to::string(to::int("forty two")));
+    /// assert_eq!(to::string(to::int("forty two")), "forty two");
     /// ```
     pub fn string(num: isize) -> String {
         let mut num_internal = num;
@@ -109,14 +109,14 @@ pub mod to {
     /// ```
     /// use to_int_and_back::to;
     ///
-    /// assert_eq!(42, to::int("forty two"));
+    /// assert_eq!(to::int("forty two"), 42);
     ///
-    /// assert_eq!(42,to::int("frty twoo"));
+    /// assert_eq!(to::int("frty twoo"), 42);
     ///```
     /// ```should_panic
     /// use to_int_and_back::to;
     ///
-    /// assert_eq!(42,to::int("fty twwoo"));
+    /// assert_eq!(to::int("fty twwoo"), 42);
     ///```
     pub fn int(text_num: &str) -> isize {
         let text_num_inner = &text_num.to_lowercase()[..];
