@@ -1,55 +1,30 @@
 //!This library will convert English number names to their integer equivalent and vice versa.
 //!
-//! assert_eq!(42, to::int(&to::string(42)));
-//!
-//! assert_eq!("forty two",to::string(to::int("forty two")));
-//!
 //! Support includes negative numbers and typos in the English name input.
 //!
 //! Uses Levenshtein distance algorithm to accept words a distance of 1 from a valid spelling.
-//!
-//! assert_eq!(42,to::int("frty twoo"));
-//!
-//! assert_eq!(42,to::int("fty twwoo")); panics!
 
 pub mod to {
     use std::collections::HashMap;
 
-    ///This function takes in an integer as an isize and returns its English name as a String.
+    ///This function takes an integer and returns its English name.
+    ///
+    /// 42 -> "forty two"
+    ///
+    /// ```
+    /// use to_int_and_back::to;
+    ///
+    /// assert_eq!("forty two", to::string(42));
+    ///
+    /// assert_eq!(42, to::int(&to::string(42)));
+    ///
+    /// assert_eq!("forty two",to::string(to::int("forty two")));
+    /// ```
     pub fn string(num: isize) -> String {
         let mut num_internal = num;
         if num_internal == 0 {
             return String::from("zero");
         }
-        let mut is_neg = false;
-        if num_internal < 0 {
-            num_internal = num_internal * -1;
-            is_neg = true;
-        }
-        let scales = [
-            "",
-            "thousand",
-            "million",
-            "billion",
-            "trillion",
-            "quadrillion",
-        ];
-        let mut i = 0;
-        let mut words: String = String::from("");
-        while num_internal > 0 {
-            if num_internal % 1000 != 0 {
-                words = itt_helper(num_internal % 1000) + scales[i] + " " + &words[..];
-            }
-            num_internal /= 1000;
-            i += 1;
-        }
-        if is_neg {
-            words = String::from("negative ") + &words[..]
-        }
-        String::from(words.trim())
-    }
-
-    fn itt_helper(num: isize) -> String {
         let units = [
             "",
             "one",
@@ -72,21 +47,77 @@ pub mod to {
             "eighteen",
             "nineteen",
         ];
+
         let tens = [
             "", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
         ];
+
+        let scales = [
+            "",
+            "thousand",
+            "million",
+            "billion",
+            "trillion",
+            "quadrillion",
+        ];
+
+        let mut is_neg = false;
+        if num_internal < 0 {
+            num_internal = num_internal * -1;
+            is_neg = true;
+        }
+        let mut current_scale = 0;
+        let mut words: String = String::from("");
+        while num_internal > 0 {
+            if num_internal % 1000 != 0 {
+                words = to_string_helper(num_internal % 1000, &units, &tens)
+                    + scales[current_scale]
+                    + " "
+                    + &words[..];
+            }
+            num_internal /= 1000;
+            current_scale += 1;
+        }
+        if is_neg {
+            words = String::from("negative ") + &words[..]
+        }
+        String::from(words.trim())
+    }
+
+    fn to_string_helper(num: isize, units: &[&str], tens: &[&str]) -> String {
         if num == 0 {
             String::from("")
         } else if num < 20 {
             String::from(units[num as usize]) + " "
         } else if num < 100 {
-            String::from(tens[(num / 10) as usize]) + " " + itt_helper(num % 10).as_str()
+            String::from(tens[(num / 10) as usize])
+                + " "
+                + to_string_helper(num % 10, &units, &tens).as_str()
         } else {
-            String::from(units[(num / 100) as usize]) + " hundred " + itt_helper(num % 100).as_str()
+            String::from(units[(num / 100) as usize])
+                + " hundred "
+                + to_string_helper(num % 100, &units, &tens).as_str()
         }
     }
 
-    ///This function takes in an English name of an integer as a &str and returns it as an isize.
+    ///This function takes an English name of an integer and returns it as an isize.
+    ///
+    /// Will still convert for input errors a distance of 1 from the correct spelling of the English name.
+    ///
+    /// "forty two" -> 42
+    ///
+    /// ```
+    /// use to_int_and_back::to;
+    ///
+    /// assert_eq!(42, to::int("forty two"));
+    ///
+    /// assert_eq!(42,to::int("frty twoo"));
+    ///```
+    /// ```should_panic
+    /// use to_int_and_back::to;
+    ///
+    /// assert_eq!(42,to::int("fty twwoo"));
+    ///```
     pub fn int(text_num: &str) -> isize {
         let text_num_inner = &text_num.to_lowercase()[..];
         let mut num_words: HashMap<&str, (isize, isize)> = HashMap::new();
@@ -124,43 +155,7 @@ pub mod to {
             "quadrillion",
         ];
         num_words.insert("and", (1, 0));
-        let all_words = [
-            "and",
-            "zero",
-            "one",
-            "two",
-            "three",
-            "four",
-            "five",
-            "six",
-            "seven",
-            "eight",
-            "nine",
-            "ten",
-            "eleven",
-            "twelve",
-            "thirteen",
-            "fourteen",
-            "fifteen",
-            "sixteen",
-            "seventeen",
-            "eighteen",
-            "nineteen",
-            "twenty",
-            "thirty",
-            "forty",
-            "fifty",
-            "sixty",
-            "seventy",
-            "eighty",
-            "ninety",
-            "hundred",
-            "thousand",
-            "million",
-            "billion",
-            "trillion",
-            "quadrillion",
-        ];
+
         for (index, word) in units.iter().enumerate() {
             num_words.insert(*word, (1, index as isize));
         }
@@ -178,24 +173,22 @@ pub mod to {
             if min_distance(word, "negative") < 3 {
                 if multipler == 1 {
                     multipler = -1;
+                    continue;
                 } else {
                     panic!("Invalid input");
                 }
-            } else if !all_words.contains(&word) {
-                let word = find_possible_matches(&word, &all_words);
-                let (scale, increment) = num_words[word.as_str()];
-                current = current * scale + increment;
-                if scale > 100 {
-                    result += current;
-                    current = 0;
-                }
+            }
+            let word_next = if !num_words.contains_key(&word) {
+                find_possible_matches(&word, &num_words)
             } else {
-                let (scale, increment) = num_words[word];
-                current = current * scale + increment;
-                if scale > 100 {
-                    result += current;
-                    current = 0;
-                }
+                String::from(word)
+            };
+
+            let (scale, increment) = num_words[word_next.as_str()];
+            current = current * scale + increment;
+            if scale > 100 {
+                result += current;
+                current = 0;
             }
         }
         (result + current) * multipler
@@ -208,11 +201,11 @@ pub mod to {
         }
     }
 
-    fn find_possible_matches(word: &str, words: &[&str]) -> String {
+    fn find_possible_matches(word: &str, words: &HashMap<&str, (isize, isize)>) -> String {
         let mut min_dist = 9999;
         let mut final_string: String = String::from("");
-        for w in words {
-            let distance = min_distance(*w, word);
+        for (w, _) in words {
+            let distance = min_distance(w, word);
             if distance < min_dist {
                 min_dist = distance;
                 final_string = String::from(*w);
