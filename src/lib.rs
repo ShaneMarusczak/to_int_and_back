@@ -25,7 +25,7 @@ pub mod to {
         if num_internal == 0 {
             return String::from("zero");
         }
-        let word_lists: &StringWordLists = &load_string_words_list();
+        let word_lists = load_words_list("string");
 
         let mut is_neg = false;
         if num_internal < 0 {
@@ -36,7 +36,7 @@ pub mod to {
         let mut words: String = String::new();
         while num_internal > 0 {
             if num_internal % 1000 != 0 {
-                words = to_string_helper(num_internal % 1000, word_lists)
+                words = to_string_helper(num_internal % 1000, &word_lists)
                     + &word_lists.scales[current_scale]
                     + " "
                     + &words[..];
@@ -50,7 +50,7 @@ pub mod to {
         String::from(words.trim())
     }
 
-    fn to_string_helper(num: isize, word_lists: &StringWordLists) -> String {
+    fn to_string_helper(num: isize, word_lists: &WordLists) -> String {
         if num == 0 {
             String::from("")
         } else if num < 20 {
@@ -92,7 +92,7 @@ pub mod to {
 
         let mut num_words: HashMap<&str, (isize, isize)> = HashMap::new();
 
-        let word_lists: &IntWordLists = &load_int_words_list();
+        let word_lists = load_words_list("int");
 
         let mut all_words: Vec<&str> = Vec::with_capacity(
             word_lists.units.len() + word_lists.tens.len() + word_lists.scales.len() + 1,
@@ -201,43 +201,23 @@ pub mod to {
     use std::path::Path;
 
     #[derive(Deserialize)]
-    struct StringWordLists {
+    struct WordLists {
         units: Vec<String>,
         tens: Vec<String>,
         scales: Vec<String>,
     }
 
-    #[derive(Deserialize)]
-    struct IntWordLists {
-        units: Vec<String>,
-        tens: Vec<String>,
-        scales: Vec<String>,
-    }
-
-    fn load_string_words_list() -> StringWordLists {
-        let path = Path::new("static/string_words.toml");
+    fn load_words_list(name: &str) -> WordLists {
+        let path_name = format!("{}_words.toml", name);
+        let path = Path::new(&path_name);
         let display = path.display();
         let mut file = match File::open(&path) {
-            Err(why) => panic!("couldn't open {}: {}", display, why),
             Ok(file) => file,
+            Err(why) => panic!("couldn't open {}: {}", display, why),
         };
         let mut file_content = String::new();
         file.read_to_string(&mut file_content).unwrap();
-        let test: StringWordLists = toml::from_str(&file_content).unwrap();
-        test
-    }
-
-    fn load_int_words_list() -> IntWordLists {
-        let path = Path::new("static/int_words.toml");
-        let display = path.display();
-        let mut file = match File::open(&path) {
-            Err(why) => panic!("couldn't open {}: {}", display, why),
-            Ok(file) => file,
-        };
-        let mut file_content = String::new();
-        file.read_to_string(&mut file_content).unwrap();
-        let test: IntWordLists = toml::from_str(&file_content).unwrap();
-        test
+        toml::from_str(&file_content).unwrap()
     }
 
     #[cfg(test)]
@@ -325,6 +305,19 @@ pub mod to {
                 "Invalid input"
             );
             assert_eq!(int("ten negative").unwrap_err(), "Invalid input");
+        }
+
+        #[test]
+        fn load_words_list_tests() {
+            load_words_list("string");
+            load_words_list("int");
+        }
+
+        #[test]
+        #[should_panic]
+        fn load_words_list_should_panic() {
+            load_words_list("foo");
+            load_words_list("bar");
         }
     }
 }
