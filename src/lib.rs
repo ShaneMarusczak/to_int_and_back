@@ -172,9 +172,9 @@ pub mod to {
         let mut current = 0;
         let mut result = 0;
         let mut multipler = 1;
-        for word in text_num_inner.split_whitespace() {
+        for (i, word) in text_num_inner.split_whitespace().enumerate() {
             if min_distance(word, "negative") < 3 {
-                if multipler == 1 {
+                if multipler == 1 && i == 0 {
                     multipler = -1;
                     continue;
                 } else {
@@ -317,5 +317,11 @@ mod tests {
             to::int("negative negative one hundred forty two").expect(""),
             142
         );
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid input")]
+    fn tests_should_panic_message_4() {
+        assert_eq!(to::int("ten negative").expect(""), -10);
     }
 }
