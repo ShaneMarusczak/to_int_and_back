@@ -163,10 +163,10 @@ pub mod to {
             }
         }
         if min_dist > MAX_STRING_DISTANCE {
-            if min_distance(word, "negative") < 5 {
-                return Err(String::from("Did you mean negative?"));
+            return if min_distance(word, "negative") < 5 {
+                Err(String::from("Did you mean negative?"))
             } else {
-                return Err(String::from(format!("Did you mean {}?", final_string)));
+                Err(String::from(format!("Did you mean {}?", final_string)))
             }
         }
         Ok(final_string)
