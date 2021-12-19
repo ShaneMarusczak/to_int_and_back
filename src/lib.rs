@@ -383,29 +383,20 @@ pub mod to {
         fn string_f_test() {
             assert_eq!(string_f(3_f32, 0), "three");
             assert_eq!(string_f(-3_f32, 0), "negative three");
-
+            assert_eq!(string_f(-4.000, 0), "negative four");
+            assert_eq!(string_f(-4.000, 3), "negative four");
             assert_eq!(string_f(-33.53, 2), "negative thirty three point five three");
-
             assert_eq!(string_f(3.44, 1), "three point four");
-
             assert_eq!(string_f(3.45, 1), "three point five");
-
             assert_eq!(string_f(3.4, 0), "three");
-
             assert_eq!(string_f(3.5, 0), "four");
-
             assert_eq!(string_f(-3.44, 1), "negative three point four");
-
             assert_eq!(string_f(-3.45, 1), "negative three point five");
-
             assert_eq!(string_f(-3.4, 0), "negative three");
-
             assert_eq!(string_f(-3.5, 0), "negative four");
-
             assert_eq!(string_f(1427473.75 as f32, 2),
             "one million four hundred twenty seven thousand four hundred seventy three point seven five"
             );
-
             assert_eq!(string_f(14.274737 as f32, 2),
                        "fourteen point two seven"
             );
