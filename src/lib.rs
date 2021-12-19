@@ -156,13 +156,13 @@ pub mod to {
                         return Err(e);
                     }
                 };
-                let char = match char::from_digit(dig, 10) {
+                let ch = match char::from_digit(dig, 10) {
                     None => {
                         return Err(String::from("Invalid value in tail string."));
                     }
                     Some(v) => v
                 };
-                tail_string_digs.push(char);
+                tail_string_digs.push(ch);
             }
             let h = match int(head_string) {
                 Ok(num) => num as f32,
