@@ -66,11 +66,72 @@ pub mod to {
         }
     }
 
-    ///This function takes an English name of an integer and returns its integer value as an isize.
+    ///This function takes an English name of a floating point number and returns its value as an f32.
     ///
-    /// Will still convert for input errors a distance of 1 from the correct spelling of the English name.
+    /// Returns
+    /// Ok(f32),
+    /// Err(String)
     ///
-    /// Will offer suggestion on possible word if input error is greater than a distance of 1 from the correct spelling of the English name.
+    /// ```
+    /// # use to_int_and_back::to;
+    ///
+    /// assert_eq!(to::float("forty two point seven").unwrap(), 42.7 as f32);
+    ///
+    /// assert_eq!(to::float("negative forty two point nine").unwrap(), -42.9 as f32);
+    ///
+    /// assert_eq!(to::float("frty twoo point zero").unwrap(), 42.0 as f32);
+    ///
+    /// assert_eq!(to::float("fty two").unwrap_err(), "Did you mean forty?");
+    ///```
+    pub fn float(text_num: &str) -> Result<f32, String> {
+        let text_num_inner = &text_num.to_lowercase()[..];
+
+        for w in text_num_inner.split_whitespace() {
+            if min_distance(w, "point") == 1 {
+                return Err(String::from("Did you mean point?"));
+            }
+        }
+
+        return if text_num_inner.contains("point") {
+            let head_string = text_num_inner.split("point").collect::<Vec<&str>>()[0].trim();
+            let tail_string = text_num_inner.split("point").collect::<Vec<&str>>()[1].trim();
+            let mut tail_string_digs = String::from("0.");
+            for c in tail_string.split_whitespace() {
+                let dig = match int(&c) {
+                    Ok(num) => num as u32,
+                    Err(e) => {
+                        return Err(e);
+                    }
+                };
+                let char = match char::from_digit(dig, 10) {
+                    None => {
+                        return Err(String::from("Invalid value in tail string."));
+                    }
+                    Some(v) => v
+                };
+                tail_string_digs.push(char);
+            }
+            let h = match int(head_string) {
+                Ok(num) => num as f32,
+                Err(e) => {
+                    return Err(e);
+                }
+            };
+            let t = tail_string_digs.trim().parse::<f32>().unwrap();
+            return if h < 0_f32 {
+                Ok(h - t)
+            } else {
+                Ok(h + t)
+            };
+        } else {
+            match int(text_num) {
+                Ok(num) => Ok(num as f32),
+                Err(e) => Err(e)
+            }
+        }
+    }
+
+    ///This function takes an English name of an integer and returns its value as an isize.
     ///
     /// Returns
     /// Ok(isize),
@@ -242,6 +303,34 @@ pub mod to {
                 int(&string(-123_456_789_098_765_432)).unwrap(),
                 -123_456_789_098_765_432
             );
+        }
+
+        #[test]
+        fn float_test() {
+            assert_eq!(float("negative three point five").unwrap(), -3.5 as f32);
+            assert_eq!(float("forty too point four two").unwrap(), 42.42 as f32);
+            assert_eq!(float("zero point four two").unwrap(), 0.42 as f32);
+            assert_eq!(float("point four two").unwrap(), 0.42 as f32);
+            assert_eq!(float("three point five").unwrap(), 3.5 as f32);
+            assert_eq!(float("three").unwrap(), 3 as f32);
+
+            assert_eq!(
+                float(
+                    "one million four hundred twenty seven thousand four hundred and seventy three
+                    point seven six nine nine eight"
+                )
+                    .unwrap(),
+                1_427_473.769_98 as f32
+            );
+
+
+            assert_eq!(float("three thosad point four two").unwrap_err(), "Did you mean thousand?");
+
+            assert_eq!(float("three point sixty two").unwrap_err(), "Invalid value in tail string.");
+
+
+            assert_eq!(float("three poin sixty two").unwrap_err(), "Did you mean point?");
+
         }
 
         #[test]
