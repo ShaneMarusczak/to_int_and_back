@@ -7,6 +7,59 @@ pub mod to {
 
     const MAX_STRING_DISTANCE: i32 = 1;
 
+    /// This function takes a floating point number and returns its English name
+    ///
+    /// Takes two arguments, number to convert (num) and precision of decimal (precision)
+    ///
+    /// Experimental!
+    /// ```
+    ///# use to_int_and_back::to;
+    ///
+    ///assert_eq!(to::string_f(3.14, 2_f32), "three point one four");
+    ///
+    /// assert_eq!(to::string_f(-42.53, 2_f32), "negative forty two point five three");
+    ///```
+    pub fn string_f(num: f32, precision: f32) -> String {
+        //TODO: Figure out a way to calc precision based on num
+        let mut head = num.floor();
+        let mut tail = num % 1_f32;
+        if num < 0_f32 {
+            if tail != 0_f32 {
+                head += 1_f32;
+            }
+            tail = tail * -1_f32;
+        }
+
+        if precision != 0_f32 {
+            tail = (tail * 10_f32.powf(precision)).round();
+            tail = tail / (10_f32.powf(precision));
+        }
+
+        return if tail == 0_f32 {
+            string(head as isize)
+        } else {
+            let mut tail_string = String::from(" point");
+            for c in tail.to_string().trim().chars().skip(2) {
+                let n = match c {
+                    '0' => 0,
+                    '1' => 1,
+                    '2' => 2,
+                    '3' => 3,
+                    '4' => 4,
+                    '5' => 5,
+                    '6' => 6,
+                    '7' => 7,
+                    '8' => 8,
+                    '9' => 9,
+                    _ => panic!("unreachable"),
+                };
+                let str_to_add = String::from(" ") + &string(n);
+                tail_string += &*str_to_add;
+            }
+            string(head as isize) + &*tail_string
+        }
+    }
+
     ///This function takes an integer and returns its English name.
     ///
     /// ```
@@ -322,14 +375,26 @@ pub mod to {
                     .unwrap(),
                 1_427_473.769_98 as f32
             );
-
-
             assert_eq!(float("three thosad point four two").unwrap_err(), "Did you mean thousand?");
-
             assert_eq!(float("three point sixty two").unwrap_err(), "Invalid value in tail string.");
-
-
             assert_eq!(float("three poin sixty two").unwrap_err(), "Did you mean point?");
+        }
+
+        #[test]
+        fn string_f_test() {
+            assert_eq!(string_f(3_f32, 0_f32), "three");
+            assert_eq!(string_f(-3_f32, 0_f32), "negative three");
+
+            assert_eq!(string_f(-3.5, 1_f32), "negative three point five");
+            assert_eq!(string_f(-33.53, 2_f32), "negative thirty three point five three");
+
+            assert_eq!(string_f(1427473.75 as f32, 2_f32),
+            "one million four hundred twenty seven thousand four hundred seventy three point seven five"
+            );
+
+            assert_eq!(string_f(14.274737 as f32, 6_f32),
+                       "fourteen point two seven four seven three seven"
+            );
 
         }
 
