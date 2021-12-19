@@ -10,7 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f8db1fbf-2b19-4263-8542-4be199f38988" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +102,7 @@
       <updated>1639061795879</updated>
       <workItem from="1639074891690" duration="107000" />
       <workItem from="1639075006952" duration="162000" />
-      <workItem from="1639941095626" duration="3722000" />
+      <workItem from="1639941095626" duration="3799000" />
     </task>
     <servers />
   </component>
