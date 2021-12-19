@@ -15,46 +15,45 @@ pub mod to {
     /// ```
     ///# use to_int_and_back::to;
     ///
-    ///assert_eq!(to::string_f(3.14, 2_f32), "three point one four");
+    /// assert_eq!(to::string_f(3.14, 2), "three point one four");
     ///
-    /// assert_eq!(to::string_f(-42.53, 2_f32), "negative forty two point five three");
+    /// assert_eq!(to::string_f(-42.53, 2), "negative forty two point five three");
+    ///
+    /// assert_eq!(to::string_f(1.539323, 2), "one point five four");
     ///```
-    pub fn string_f(num: f32, precision: f32) -> String {
-        //TODO: Figure out a way to calc precision based on num
+    pub fn string_f(num: f32, precision: u8) -> String {
         let mut head = num.floor();
         let mut tail = num % 1_f32;
-        if num < 0_f32 {
-            if tail != 0_f32 {
-                head += 1_f32;
-            }
-            tail = tail * -1_f32;
-        }
-
-        if precision != 0_f32 {
-            tail = (tail * 10_f32.powf(precision)).round();
-            tail = tail / (10_f32.powf(precision));
-        }
 
         return if tail == 0_f32 {
             string(head as isize)
-        } else {
+        } else if precision == 0 {
+            string(num.round() as isize)
+        }
+        else {
+            if num < 0_f32 {
+                head += 1_f32;
+                tail = tail.abs();
+            }
+
+            tail = (tail * 10_f32.powf(precision as f32)).round();
+            tail = tail / (10_f32.powf(precision as f32));
+
             let mut tail_string = String::from(" point");
             for c in tail.to_string().trim().chars().skip(2) {
-                let n = match c {
-                    '0' => 0,
-                    '1' => 1,
-                    '2' => 2,
-                    '3' => 3,
-                    '4' => 4,
-                    '5' => 5,
-                    '6' => 6,
-                    '7' => 7,
-                    '8' => 8,
-                    '9' => 9,
+                tail_string += match c {
+                    '0' => " zero",
+                    '1' => " one",
+                    '2' => " two",
+                    '3' => " three",
+                    '4' => " four",
+                    '5' => " five",
+                    '6' => " six",
+                    '7' => " seven",
+                    '8' => " eight",
+                    '9' => " nine",
                     _ => panic!("unreachable"),
                 };
-                let str_to_add = String::from(" ") + &string(n);
-                tail_string += &*str_to_add;
             }
             string(head as isize) + &*tail_string
         }
@@ -382,18 +381,33 @@ pub mod to {
 
         #[test]
         fn string_f_test() {
-            assert_eq!(string_f(3_f32, 0_f32), "three");
-            assert_eq!(string_f(-3_f32, 0_f32), "negative three");
+            assert_eq!(string_f(3_f32, 0), "three");
+            assert_eq!(string_f(-3_f32, 0), "negative three");
 
-            assert_eq!(string_f(-3.5, 1_f32), "negative three point five");
-            assert_eq!(string_f(-33.53, 2_f32), "negative thirty three point five three");
+            assert_eq!(string_f(-33.53, 2), "negative thirty three point five three");
 
-            assert_eq!(string_f(1427473.75 as f32, 2_f32),
+            assert_eq!(string_f(3.44, 1), "three point four");
+
+            assert_eq!(string_f(3.45, 1), "three point five");
+
+            assert_eq!(string_f(3.4, 0), "three");
+
+            assert_eq!(string_f(3.5, 0), "four");
+
+            assert_eq!(string_f(-3.44, 1), "negative three point four");
+
+            assert_eq!(string_f(-3.45, 1), "negative three point five");
+
+            assert_eq!(string_f(-3.4, 0), "negative three");
+
+            assert_eq!(string_f(-3.5, 0), "negative four");
+
+            assert_eq!(string_f(1427473.75 as f32, 2),
             "one million four hundred twenty seven thousand four hundred seventy three point seven five"
             );
 
-            assert_eq!(string_f(14.274737 as f32, 6_f32),
-                       "fourteen point two seven four seven three seven"
+            assert_eq!(string_f(14.274737 as f32, 2),
+                       "fourteen point two seven"
             );
 
         }
